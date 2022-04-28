@@ -18,9 +18,16 @@ class MyStack:
     def top(self) -> int:
         if self.empty():
             return
-        t = self.pop()
-        self.push(t)
-        return t
+        return self.que[-1]
 
     def empty(self) -> bool:
         return len(self.que) == 0
+
+
+
+# Your MyStack object will be instantiated and called as such:
+# obj = MyStack()
+# obj.push(x)
+# param_2 = obj.pop()
+# param_3 = obj.top()
+# param_4 = obj.empty()
