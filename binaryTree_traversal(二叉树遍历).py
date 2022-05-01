@@ -122,3 +122,25 @@ class Solution:
                 cur = stack.pop()
                 res.append(cur.val)
         return res
+
+
+# 层序遍历 level order traversal
+from collections import deque
+class Solution:
+    def levelOrder(self, root: TreeNode) -> List[List[int]]:
+        que = deque()
+        if root:
+            que.append(root)
+        res = []
+        while len(que) > 0:
+            levelNodes = []
+            size = len(que)
+            for _ in range(size):
+                node = que.popleft()
+                levelNodes.append(node.val)
+                if node.left:
+                    que.append(node.left)
+                if node.right:
+                    que.append(node.right)
+            res.append(levelNodes)
+        return res
