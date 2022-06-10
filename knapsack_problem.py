@@ -1,3 +1,9 @@
+"""
+https://leetcode.cn/problems/combination-sum-iv/solution/xi-wang-yong-yi-chong-gui-lu-gao-ding-bei-bao-wen-/
+
+https://github.com/youngyangyang04/leetcode-master/blob/master/problems/%E8%83%8C%E5%8C%85%E6%80%BB%E7%BB%93%E7%AF%87.md
+
+"""
 def _01_knapsack():
 	weight = [1,3,4]
 	value = [15, 20, 30]
