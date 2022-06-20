@@ -1,6 +1,6 @@
 class Solution:
     def findLength(self, nums1: List[int], nums2: List[int]) -> int:
-        # dp[i][j] is the maximum length of the common subarray of A which ends with i-th item of nums1 and B ends with j-th item of nums2, i,j >= 1
+        # dp[i][j] is the maximum length of the common suffix of A[:i] and B[:j]
 
         dp = []
         for _ in range(len(nums1)+1):
@@ -14,8 +14,3 @@ class Solution:
                 _max = max(_max, dp[i][j])
                 
         return _max
-            
-
-
-        
-
