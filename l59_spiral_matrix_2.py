@@ -37,3 +37,24 @@ class Solution:
         if n % 2 == 1:
             res[mid][mid] = value
         return res
+
+class Solution:
+    def generateMatrix(self, n: int) -> List[List[int]]:
+        row, col = 0, 0
+        deltaRow, deltaCol = 0, 1
+        
+        res = []
+        for _ in range(n):
+            res.append([-1] * n)
+        i = 1
+        while i <= n * n:
+            res[row][col] = i
+            
+            if row + deltaRow < 0 or row + deltaRow > n - 1 or col + deltaCol < 0 or col + deltaCol > n - 1 or res[row + deltaRow][col + deltaCol] != -1:
+                deltaRow, deltaCol = deltaCol, -deltaRow
+            
+            row += deltaRow
+            col += deltaCol
+            i += 1
+        
+        return res
