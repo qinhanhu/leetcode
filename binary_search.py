@@ -12,4 +12,5 @@ def lower_bound(array, left, right, value):
             right = mid
     return left
 
-print(lower_bound([1,2,3], 0, 3, 2))
+print(lower_bound([1,2,3], 0, 3, 4))
+
