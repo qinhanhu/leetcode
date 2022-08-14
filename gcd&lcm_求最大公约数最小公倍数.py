@@ -29,3 +29,11 @@ def gcdV3(a, b):
 import math
 def lcm(a, b):
 	return a * b / math.gcd(a, b)
+
+def getLCM(nums):
+    lcm = 1
+    for num in nums:
+        lcm = num * lcm // math.gcd(num, lcm)
+    return lcm
+
+print(getLCM([2,3,2]))
