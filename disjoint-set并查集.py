@@ -1,24 +1,29 @@
 # Disjoint-set 并查集
 
-def init():
-	n = 1005
-	father = [i for i in range(n)]
+class DisjointSet(object):
+	"""docstring for DisjointSet"""
+	def __init__(self, n):
+		self.n = n
+		self.parent = [i for i in range(n)]
+		self.count = n # 连通分量个数
+	
 
-def find(u):
-	if u == father[u]:
-		return u
-	father[u] = find(father[u])
-	return father[u]
 
-def join(u, v):
-	u = find(u)
-	v = find(v)
-	if u == v:
-		return
-	father[v] = u
+	def find(self, u):
+		if self.parent[u] != u:
+			self.parent[u] = self.find(parent[u])
+		return self.parent[u]
 
-def same(u, v):
-	u = find(u)
-	v = find(v)
-	return u == v
+	def union(self, u, v):
+		rootU = self.find(u)
+		rootV = self.find(v)
+		if rootU == rootU:
+			return
+		self.parent[rootV] = rootU
+		self.count -= 1
+
+	def connected(u, v):
+		rootU = self.find(u)
+		rootV = self.find(v)
+		return rootU == rootV
 
