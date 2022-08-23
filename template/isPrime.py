@@ -9,7 +9,7 @@ def isPrime(n):
 
     sqrt = int(math.sqrt(n))
     for i in range(5, sqrt+1, 6):
-        if n % i == 0 or n % (i+2) == 0 :
+        if n % i == 0 or n % (i+2) == 0:
             return False
     return True
     
