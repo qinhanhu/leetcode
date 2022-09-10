@@ -29,7 +29,26 @@ class Solution:
         else:
             return res
 
+def dijkstra(start, graph):
+        
+    # 维护start到各个点的最短路径权重
+    disFromStart = [float('inf')] * n
+    disFromStart[start] = 0
 
+    minHeap = [] # heap 按距离(权重)排序
+    # 从start开始BFS 
+    heapq.heappush(minHeap, (0, start))
+    while len(minHeap) > 0:
+        curDisFromStart, cur = heapq.heappop(minHeap)
+        if curDisFromStart > disFromStart[cur]:
+            continue
+        # 将cur的相邻节点装入heap
+        for neighbor, disToNeighbor in graph[cur].items():
+            if curDisFromStart + disToNeighbor < disFromStart[neighbor]:
+                disFromStart[neighbor] = curDisFromStart + disToNeighbor
+                heapq.heappush(minHeap, (curDisFromStart + disToNeighbor, neighbor))
+
+    return disFromStart
 
             
 
