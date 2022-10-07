@@ -312,4 +312,97 @@ class Solution:
             left += 1
             right -= 1
 
+# 10. L559: https://leetcode.com/problems/maximum-depth-of-n-ary-tree/
+"""
+# Definition for a Node.
+class Node:
+    def __init__(self, val=None, children=None):
+        self.val = val
+        self.children = children
+"""
+from collections import deque
+class Solution:
+    def maxDepth(self, root: 'Node') -> int:
+        # BFS
+        if not root:
+            return 0
+        que = deque()
+        que.append(root)
+        level = 0
+        while len(que) > 0:
+            size = len(que)
+            for _ in range(size):
+                cur = que.popleft()
+                for child in cur.children:
+                    que.append(child)
+            level += 1
+        return level
+
+# 11. L859: https://leetcode.com/problems/buddy-strings/
+class Solution:
+    def buddyStrings(self, s: str, goal: str) -> bool:
+        n, m = len(s), len(goal)
+        if n != m:
+            return False
+        if s == goal:
+            return len(set(s)) < m
+        
+        diffIx = []
+        for i in range(n):
+            if s[i] != goal[i]:
+                diffIx.append(i)
+        if len(diffIx) != 2:
+            return False
+        if s[diffIx[0]] == goal[diffIx[1]] and s[diffIx[1]] == goal[diffIx[0]]:
+            return True
+        return False
+        
+# 12. L1347
+class Solution:
+    def minSteps(self, s: str, t: str) -> int:
+        hmap = [0] * 26
+        n = len(s)
+        for i in range(n):
+            hmap[ord(s[i]) - ord('a')] += 1
+        for j in range(n):
+            hmap[ord(t[j]) - ord('a')] -= 1
+        
+        res = 0
+        for cnt in hmap:
+            if cnt > 0:
+                res += cnt
+        return res
+
+# 13. L854: https://leetcode.cn/problems/k-similar-strings/
+from collections import deque
+class Solution:
+    def kSimilarity(self, s1: str, s2: str) -> int:
+        # BFS
+        n = len(s2)
+        k = 0
+        que = deque()
+        que.append(s1)
+        visited = set()
+        while len(que) > 0:
+            size = len(que)
+            for _ in range(size):
+                cur = que.popleft()
+                visited.add(cur)
+                if cur == s2:
+                    return k
+                i = 0
+                while cur[i] == s2[i]:
+                    i += 1
+                for j in range(i+1, n):
+                    if cur[j] == s2[i] and cur[j] != s2[j]:
+                        temp = list(cur)
+                        temp[i], temp[j] = temp[j], temp[i]
+                        temp = "".join(temp)
+                        if temp not in visited:
+                            que.append(temp)
+            k += 1
+        return -1
+        
+            
+
         
