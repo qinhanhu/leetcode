@@ -403,6 +403,188 @@ class Solution:
             k += 1
         return -1
         
+# 14. L36
+class Solution:
+    def isValidSudoku(self, board: List[List[str]]) -> bool:
+        rowSet, colSet, blockSet = [], [], []
+        for _ in range(9):
+            rowSet.append([0] * 9)
+            colSet.append([0] * 9)
+            blockSet.append([0] * 9)
+        for i in range(9):
+            for j in range(9):
+                if board[i][j] == ".":
+                    continue
+                
+                val = int(board[i][j]) - 1
+                if rowSet[i][val]:
+                    return False
+                if colSet[j][val]:
+                    return False
+                if blockSet[int(i / 3) * 3 + int(j / 3)][val]:
+                    return False
+                
+                rowSet[i][val] += 1
+                colSet[j][val] += 1
+                blockSet[int(i / 3) * 3 + int(j / 3)][val] += 1
+        return True
+
+# 15. L37
+class Solution:
+    def solveSudoku(self, board: List[List[str]]) -> None:
+        """
+        Do not return anything, modify board in-place instead.
+        """
+        def backtracking(board) -> bool:
+            rowsLen = colsLen = 9
+            for i in range(rowsLen):
+                for j in range(colsLen):
+                    if board[i][j] != '.':
+                        continue
+                    for val in range(1, 10):
+                        if not isValid(i, j, str(val), board):
+                            continue
+                        board[i][j] = str(val)
+                        if backtracking(board) is True:
+                            return True
+                        board[i][j] = '.'
+                    return False
+            return True
+                        
+        def isValid(row, col, val, board) -> bool:
+            rowsLen = colsLen = 9
+            # same row
+            for j in range(colsLen):
+                if board[row][j] == val:
+                    return False
+            # same col
+            for i in range(rowsLen):
+                if board[i][col] == val:
+                    return False
+            # 3 * 3
+            startRow = int(row / 3) * 3
+            startCol = int(col / 3) * 3
+            for i in range(startRow, startRow + 3):
+                for j in range(startCol, startCol + 3):
+                    if board[i][j] == val:
+                        return False
+            return True
+
+        backtracking(board)
+        return
+
+# 16. L124
+# Definition for a binary tree node.
+# class TreeNode:
+#     def __init__(self, val=0, left=None, right=None):
+#         self.val = val
+#         self.left = left
+#         self.right = right
+class Solution:
+    def __init__(self):
+        self.maxSum = -float("inf")
+    def maxPathSum(self, root: Optional[TreeNode]) -> int:
+        """
+        n
+        |
+        a
+      /   \
+     b     c
+     
+     for node a, 
+     1. b -> a -> c may be maxSum, update maxSum
+     2. b -> a -> a.parent 
+     3. c -> a -> a.parent 
+     return max(path(b->a, c->a)) to a.parent
+        """
+        self.dfs(root)
+        return self.maxSum
+        
+    def dfs(self,root) -> int:
+        if not root:
+            return 0
+        
+        leftMax = max(0, self.dfs(root.left))
+        rightMax = max(0, self.dfs(root.right))
+
+        self.maxSum = max(self.maxSum, root.val + leftMax + rightMax)
+        return max(root.val, leftMax + root.val, rightMax + root.val)
+
+# 17. L210
+from collections import deque
+class Solution:
+    def findOrder(self, numCourses: int, prerequisites: List[List[int]]) -> List[int]:
+        """
+        topological sort
+        """
+        # step1: create graph and indegree map
+        # prerequisites[i] = [ai, bi] represents edge (bi -> ai)
+        # graph is a map(K, V), K is a node and V is nodes it can reach
+        graph = [[] for _ in range(numCourses)]
+        indegree = [0] * numCourses
+        for dst, src in prerequisites:
+            graph[src].append(dst)
+            indegree[dst] += 1
+        
+        # step 2: BFS from every node with 0 indegree.
+        que = deque()
+        for i, val in enumerate(indegree):
+            if val == 0:
+                que.append(i)
+        visited = 0
+        res = []
+        while len(que) > 0:
+            size = len(que)
+            for _ in range(size):
+                cur = que.popleft()
+                res.append(cur)
+                for neighbors in graph[cur]:
+                    indegree[neighbors] -= 1
+                    if indegree[neighbors] == 0:
+                        que.append(neighbors)
+            visited += size
+        # Find Loop
+        if visited != numCourses:
+            return []
+        return res
+
+# 18. L286
+class Solution:
+    def wallsAndGates(self, rooms: List[List[int]]) -> None:
+        """
+        Do not return anything, modify rooms in-place instead.
+        """
+        """
+        BFS from all gates at the same time
+        Time: O(mn)
+        Space: O(mn) queue's size
+        
+        """
+        INF = 2**31 - 1
+        queue = collections.deque()
+        m = len(rooms)
+        n = len(rooms[0])
+        visited = set()
+        for i in range(m):
+            for j in range(n):
+                if rooms[i][j] == 0:
+                    queue.append((i, j))
+                    visited.add((i, j))
+        
+        distance = 0
+        while len(queue) > 0:
+            size = len(queue)
+            for _ in range(size):
+                i, j = queue.popleft()
+                rooms[i][j] = distance
+                for nexti, nextj in [(i-1, j), (i+1, j), (i, j-1), (i, j+1)]:
+                    if 0 <= nexti <= m-1 and 0 <= nextj <= n-1 and rooms[nexti][nextj] == INF and (nexti, nextj) not in visited:
+                        queue.append((nexti, nextj))
+                        visited.add((nexti, nextj))
+            distance += 1
             
+        
+        
+        
 
         

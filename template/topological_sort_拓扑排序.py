@@ -4,7 +4,9 @@ class Solution:
     def findOrder(self, numCourses: int, prerequisites: List[List[int]]) -> List[int]:
         """
         1. mark indegree of every nodes -> indegree[int]
-        2. BFS start with nodes that has 0 indegree; if we visited all nodes, there is no loop in this graph, else it's impossible to finish all courses. Record the order when we visit nodes, return the order. 
+        2. BFS start with nodes that has 0 indegree; if we visited all nodes, 
+        there is no loop in this graph, else it's impossible to finish all courses. 
+        Record the order when we visit nodes, return the order. 
         """
         
         # step 1
