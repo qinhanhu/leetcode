@@ -548,43 +548,272 @@ class Solution:
             return []
         return res
 
-# 18. L286
+# 18. L286: https://leetcode.com/problems/walls-and-gates/
+# https://leetcode.com/discuss/interview-question/1522955/Doordash-Onsite
+def wallsAndGates(rooms):
+    """
+    Do not return anything, modify rooms in-place instead.
+    """
+    """
+    BFS from all gates at the same time
+    Time: O(mn)
+    Space: O(mn) queue's size
+
+    follow up是 如果每个customer都去离自己最近的mart，
+    要找出每一个DashMart serve customers的数量。
+    只需要在BFS时记录customer会去哪个mart, 这个结果会传递给下一轮BFS.
+    同时martToCustomers[mart] += 1
+    
+    """
+    INF = 2**31 - 1
+    queue = collections.deque()
+    m = len(rooms)
+    n = len(rooms[0])
+    visited = set()
+    martToCustomers = {}
+    for i in range(m):
+        for j in range(n):
+            if rooms[i][j] == 0:
+                queue.append((i, j, (i,j)))
+                visited.add((i, j))
+                martToCustomers[(i, j)] = 0
+
+    
+    distance = 0
+    while len(queue) > 0:
+        size = len(queue)
+        for _ in range(size):
+            i, j, mart = queue.popleft()
+            if rooms[i][j] == INF:
+                martToCustomers[mart] += 1
+                rooms[i][j] = distance
+            for nexti, nextj in [(i-1, j), (i+1, j), (i, j-1), (i, j+1)]:
+                if 0 <= nexti <= m-1 and 0 <= nextj <= n-1 and rooms[nexti][nextj] == INF and (nexti, nextj) not in visited:
+                    queue.append((nexti, nextj, mart))
+                    visited.add((nexti, nextj))
+        distance += 1
+
+    print(martToCustomers)
+
+# wallsAndGates([[2147483647,-1,0,2147483647],[2147483647,2147483647,2147483647,-1],[2147483647,-1,2147483647,-1],[0,-1,2147483647,2147483647]])
+
+
+# 19. L289: https://leetcode.cn/problems/game-of-life/
 class Solution:
-    def wallsAndGates(self, rooms: List[List[int]]) -> None:
+    def gameOfLife(self, board: List[List[int]]) -> None:
         """
-        Do not return anything, modify rooms in-place instead.
+        Do not return anything, modify board in-place instead.
         """
         """
-        BFS from all gates at the same time
-        Time: O(mn)
-        Space: O(mn) queue's size
+        Rules: 
+        live = 1 dead = 0
+        live -> dead: 3
+        dead -> live: 2
+        live -> live: 1
+        dead -> dead: 0
         
+        if neighbor % 2 == 0: 
+            neighbor is dead
+        else: 
+            neighbor is live
+            
+        Time: O(mn)
+        Space: O(1) in place
         """
-        INF = 2**31 - 1
-        queue = collections.deque()
-        m = len(rooms)
-        n = len(rooms[0])
-        visited = set()
+        m = len(board)
+        n = len(board[0])
         for i in range(m):
             for j in range(n):
-                if rooms[i][j] == 0:
-                    queue.append((i, j))
-                    visited.add((i, j))
+                starti = max(0, i-1)
+                endi = min(m-1, i+1)
+                startj = max(0, j-1)
+                endj = min(n-1, j+1)
+                liveNeighbors = 0
+                for x in range(starti, endi+1):
+                    for y in range(startj, endj+1):
+                        if x == i and y == j:
+                            continue
+                        if board[x][y] % 2 != 0:
+                            liveNeighbors += 1
+                if board[i][j] == 1:
+                    # live -> dead
+                    if liveNeighbors != 2 and liveNeighbors != 3:
+                        board[i][j] = 3
+                else:
+                    # dead -> live
+                    if liveNeighbors == 3:
+                        board[i][j] = 2
+        # restore board: 3 -> 0, 2 -> 1
+        for i in range(m):
+            for j in range(n):
+                if board[i][j] == 3:
+                    board[i][j] = 0
+                elif board[i][j] == 2:
+                    board[i][j] = 1
+
+
+# 20. L297: https://leetcode.cn/problems/serialize-and-deserialize-binary-tree/
+# Definition for a binary tree node.
+# class TreeNode(object):
+#     def __init__(self, x):
+#         self.val = x
+#         self.left = None
+#         self.right = None
+
+class Codec:
+
+    def serialize(self, root):
+        """Encodes a tree to a single string.
         
+        :type root: TreeNode
+        :rtype: str
+        """
+        res = []
+        self.serializeHelper(root, res)
+        return ",".join(res)
+    
+    def serializeHelper(self, root, res:list) -> None:
+        if not root:
+            res.append("None")
+            return
+        res.append(str(root.val))
+        self.serializeHelper(root.left, res)
+        self.serializeHelper(root.right, res)
+        
+
+    def deserialize(self, data):
+        """Decodes your encoded data to tree.
+        
+        :type data: str
+        :rtype: TreeNode
+        """
+        data = collections.deque(data.split(","))
+        return self.deserializeHelper(data)
+    
+    def deserializeHelper(self, que) -> 'TreeNode':
+        val = que.popleft()
+        if val == "None":
+            return None
+        node = TreeNode(int(val))
+        node.left = self.deserializeHelper(que)
+        node.right = self.deserializeHelper(que)
+        return node
+            
+# 21. L428
+"""
+# Definition for a Node.
+class Node(object):
+    def __init__(self, val=None, children=[]):
+        self.val = val
+        self.children = children
+"""
+
+class Codec:
+    # def __init__(self):
+    #     self.res = ""
+    def serialize(self, root: 'Node') -> str:
+        """Encodes a tree to a single string.
+        
+        :type root: Node
+        :rtype: str
+        """
+        res = []
+        self.serializeHelper(root, res)
+        return ",".join(res)
+    def serializeHelper(self, root, res:list):
+        if not root:
+            return ""
+        res.append(str(root.val))
+        res.append(str(len(root.children)))
+        for child in root.children:
+            self.serializeHelper(child, res)
+        
+    
+    def deserialize(self, data: str) -> 'Node':
+        """Decodes your encoded data to tree.
+        
+        :type data: str
+        :rtype: Node
+        """
+        if not data:
+            return None
+        data = collections.deque(data.split(","))
+        return self.deserializeHelper(data)
+    def deserializeHelper(self, data):
+        if len(data) < 1:
+            return None
+        val = data.popleft()
+        node = Node(int(val), [])
+        size = int(data.popleft())
+        for _ in range(size):
+            node.children.append(self.deserializeHelper(data))
+        return node
+
+# Your Codec object will be instantiated and called as such:
+# codec = Codec()
+# codec.deserialize(codec.serialize(root))
+
+# 22. L317
+class Solution:
+    def shortestDistance(self, grid: List[List[int]]) -> int:
+        """
+        1. for every building, 
+           get shortest travel distances between the building with every empty land.      (using BFS)
+           
+           i.e. we can get
+                STDfromB1 = [m * n]
+                STDfromB2 = [m * n]
+                STDfromB3 = [m * n]
+        2. Iterate empty land (i, j), 
+           find min(STDfromB1[i,j] + STDfromB2[i,j] + STDfromB3[i,j])
+        """
+        # find bulidings
+        m = len(grid)
+        n = len(grid[0])
+        buildings = []
+        for i in range(m):
+            for j in range(n):
+                if grid[i][j] == 1:
+                    buildings.append((i, j))
+                
+        STDs = []
+        for start in buildings:
+            STD, flag = self.bfs(grid, start)
+            if not flag:
+                return -1
+            STDs.append(STD)
+        _min = float('inf')
+        for i in range(m):
+            for j in range(n):
+                if grid[i][j] == 0:
+                    _sum = 0
+                    for x in range(len(STDs)):
+                        _sum += STDs[x][i][j]
+                    _min = min(_min, _sum)
+        return _min if _min != float('inf') else -1
+            
+    def bfs(self, graph, start):
+        que = collections.deque()
+        que.append(start)
         distance = 0
-        while len(queue) > 0:
-            size = len(queue)
+        m = len(graph)
+        n = len(graph[0])
+        STD = []
+        for i in range(m):
+            STD.append([float('inf')] * n)
+        visited = set()
+        visited.add(start)
+        while len(que) > 0:
+            size = len(que)
             for _ in range(size):
-                i, j = queue.popleft()
-                rooms[i][j] = distance
-                for nexti, nextj in [(i-1, j), (i+1, j), (i, j-1), (i, j+1)]:
-                    if 0 <= nexti <= m-1 and 0 <= nextj <= n-1 and rooms[nexti][nextj] == INF and (nexti, nextj) not in visited:
-                        queue.append((nexti, nextj))
+                i, j = que.popleft()
+                STD[i][j] = distance
+                for nexti, nextj in [(i+1, j), (i-1, j), (i, j+1), (i, j-1)]:
+                    if 0 <= nexti <= m-1 and 0 <= nextj <= n-1 and (nexti,nextj) not in visited and graph[nexti][nextj] == 0:
+                        que.append((nexti, nextj))
                         visited.add((nexti, nextj))
             distance += 1
+        return STD, len(visited) > 1
             
-        
-        
-        
 
         
