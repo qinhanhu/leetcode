@@ -814,6 +814,131 @@ class Solution:
                         visited.add((nexti, nextj))
             distance += 1
         return STD, len(visited) > 1
-            
 
+# 23. L329: https://leetcode.cn/problems/longest-increasing-path-in-a-matrix/
+class Solution:
+    def longestIncreasingPath(self, matrix: List[List[int]]) -> int:
+        """
+        Input: matrix: List[List[int]]
+        Output: int: the length of Longest Increasing path
+        We can start/end from/to any position in the matrix.
         
+        case:
+            9 9 4
+            6 6 8
+            2 1 1  the output is 4, path could be [1, 2, 6, 9]
+            
+        idea: 
+        1. step1: do BFS for every node(m * n) 
+                    and use a variable to record the max steps the BFS can reach.
+                    return the variable
+            Time: O((mn)^2)
+            Space: need a queue for bfs, which is O(m * n)
+
+        Observation: for node 1: we traverse and get [1, 2, 6, 9], 
+            and when we do bfs for node 2, we traverse and get [2, 6, 9]
+            if start 9, we get [9]
+            then start 6, we get[6, res(9)]
+            ..2 [2,res(6)]
+            ..1 [1, res(2)]
+        
+        2. do BFS start from nodes with biggest value and forward by decreasing path
+           i.e. [9, 6, 2, 1]
+           which we could use Topological Sort algo:
+           For this case: 
+           1. build outdegree map: iterate every node, if node A's neighbor B is bigger, 
+           link edge A -> B which means outdegree[A] += 1
+            graph:  9 9<4
+                    ^ ^ v         
+                    6 6>8
+                    ^ ^ ^
+                    2<1 1
+            2. enqueue nodes with 0 outdegree
+            3. pop node from queue and decrease the outdgree of its neighbours. Update the num of level(depth) we reach.
+            repeat 2&3 untill queue be empty and return the depth.
+            Time: O(MN) each node only need to be visited once
+            Space: O(MN) the queue size
+        """
+        m = len(matrix)
+        n = len(matrix[0])
+        #1. build outdegree map(step1,2)
+        outdegree = dict()
+        que = collections.deque()
+        for i in range(m):
+            for j in range(n):
+                outdegree[(i,j)] = 0
+                for nexti, nextj in [(i+1, j), (i-1, j), (i, j-1), (i, j+1)]:
+                    if 0 <= nexti <= m-1 and 0<=nextj<=n-1 and matrix[i][j] < matrix[nexti][nextj]:
+                        # graph[(i,j)].add((nexti, nextj))
+                        outdegree[(i,j)] += 1
+                if outdegree[(i, j)] == 0:
+                    que.append((i, j))
+        # BFS step3
+        res = 0
+        while len(que) > 0:
+            size = len(que)
+            for _ in range(size):
+                i, j = que.popleft()
+                for nexti, nextj in [(i+1, j), (i-1, j), (i, j-1), (i, j+1)]:
+                    if 0 <= nexti <= m-1 and 0<=nextj<=n-1 and matrix[i][j] > matrix[nexti][nextj]:
+                        outdegree[(nexti, nextj)] -= 1
+                        if outdegree[(nexti, nextj)] == 0:
+                            que.append((nexti, nextj))
+            res += 1
+        return res
+
+# 24. LC341
+# """
+# This is the interface that allows for creating nested lists.
+# You should not implement it, or speculate about its implementation
+# """
+#class NestedInteger:
+#    def isInteger(self) -> bool:
+#        """
+#        @return True if this NestedInteger holds a single integer, rather than a nested list.
+#        """
+#
+#    def getInteger(self) -> int:
+#        """
+#        @return the single integer that this NestedInteger holds, if it holds a single integer
+#        Return None if this NestedInteger holds a nested list
+#        """
+#
+#    def getList(self) -> [NestedInteger]:
+#        """
+#        @return the nested list that this NestedInteger holds, if it holds a nested list
+#        Return None if this NestedInteger holds a single integer
+#        """
+
+class NestedIterator:
+    def __init__(self, nestedList: [NestedInteger]):
+        # self.nestedList = collections.deque(nestedList)
+        self.stack = nestedList[::-1]
+        
+        
+    def next(self) -> int:
+        # return self.nestedList.popleft()
+        return self.stack.pop()
+        
+    def hasNext(self) -> bool:
+        # while self.nestedList:
+        #     item = self.nestedList[0]
+        #     if item.isInteger() is True:
+        #         return True
+        #     item = self.nestedList.popleft()
+        #     item = item.getList()
+        #     for i in range(len(item) - 1, -1, -1):
+        #         self.nestedList.appendleft(item[i])
+        while self.stack:
+            top = self.stack[-1]
+            if top.isInteger():
+                return True
+            top = self.stack.pop().getList()
+            top = top[::-1]
+            self.stack += top
+        return False
+        
+         
+# Your NestedIterator object will be instantiated and called as such:
+# i, v = NestedIterator(nestedList), []
+# while i.hasNext(): v.append(i.next())
