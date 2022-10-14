@@ -373,6 +373,14 @@ class Solution:
                 res += cnt
         return res
 
+"""
+follow up:，一个string到另一个string，每次换字母要把所有的同一个字母都换了，比如说a换c要把string里面的a全都换成c，不能只换一个a。
+然后换n次之后，如果两个string是anagram，我们称这两个string同属于一个n阶anagram group，求的是如果给任意两个string和k，判断这两个string是否同属于k阶anagram group。也就是说，一个string能否通过k次变换，成为另一个string的anagram。
+例子1：string1: anagram。string2: cnagrcy。k：2。输出：true
+过程：cnagrc‍‌ -> anagray -> anagram
+例子2: string1: anagram string2: cxagrcm。k：1。输出：false
+"""
+
 # 13. L854: https://leetcode.cn/problems/k-similar-strings/
 from collections import deque
 class Solution:
@@ -707,7 +715,6 @@ class Node(object):
         self.val = val
         self.children = children
 """
-
 class Codec:
     # def __init__(self):
     #     self.res = ""
@@ -1247,7 +1254,96 @@ class Solution:
                 l = r
             r += 1
         return res
+
+# 32: L855: https://leetcode.cn/problems/exam-room/
+"""
+Time: seat() - O(logn)
+      leave() - O(logn)
+Space: O(n) for sortedlist and two maps.
+"""
+from sortedcontainers import SortedList
+class ExamRoom:
+
+    def __init__(self, n: int):
+        self.leftToRight = {}
+        self.rightToLeft = {}
+        self.N = n
+
+        def func(x):
+            """
+            排序因子:
+            1. 该线段中点到端点之间的长度 倒序 (不能直接用线段长度倒序: 考虑座位是[0, 4, 9], seat=2而不是6)
+            2. 1相等情况下, 按中点的index 正序 (sit in the seat with the lowest number)
+            """
+            left = x[0]
+            right = x[1]
+            distance = (right - left) // 2
+            seat = left + (right - left) // 2 # same as (right + left) // 2
+            
+            # case1: we should seat at 0, so let distance bigger than normal cases
+            if left == -1:
+                distance = right
+            # case2: we should seat at right - 1, so let distance bigger
+            elif right == self.N: 
+                distance = right - 1 - left
+            # Other cases: DESC distance, ASC seat
+            return (-distance, seat) 
+
+        self.sortedList = SortedList(key=func)
+        # 虚拟头尾
+        self.addInterval(-1, n)
+    
+    def seat(self) -> int:  # O(logn)
+        seat = -1
+        left, right = self.sortedList.pop(0)
+        if left == -1:
+            seat = 0
+        elif right == self.N:
+            seat = self.N - 1
+        else:
+            seat = left + (right - left) // 2
+        self.removeInterval(left, right)
+        self.addInterval(left, seat)
+        self.addInterval(seat, right)
+        return seat
+
+    def leave(self, p: int) -> None: # O(logn)
+        left = self.rightToLeft[p]
+        right = self.leftToRight[p]
+        self.removeInterval(p, right)
+        self.removeInterval(left, p)
+        self.addInterval(left, right)
+
+    def addInterval(self, left, right):  # O(logn)
+        self.sortedList.add([left, right])
+        self.leftToRight[left] = right
+        self.rightToLeft[right] = left
+    
+    def removeInterval(self, left, right): # O(logn)
+        self.sortedList.discard([left, right])
+        self.leftToRight.pop(left)
+        self.rightToLeft.pop(right)
         
         
 
         
+
+
+# 33: L875: https://leetcode.cn/problems/koko-eating-bananas/
+# Binary search
+import math
+class Solution:
+    def minEatingSpeed(self, piles: List[int], h: int) -> int:
+        left = 1
+        right = max(piles) + 1
+        while left < right:
+            speed = left + (right - left) // 2
+            timeNeeded = 0
+            for p in piles:
+                timeNeeded += math.ceil(p / speed)
+            # too slow -> improve speed
+            if timeNeeded > h:
+                left = speed + 1
+            else:
+                right = speed
+        return left
