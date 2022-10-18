@@ -356,8 +356,33 @@ class Solution:
         if s[diffIx[0]] == goal[diffIx[1]] and s[diffIx[1]] == goal[diffIx[0]]:
             return True
         return False
-        
-# 12. L1347
+"""
+# Definition: Similar restaurants
+# Two restaurants R1 and R2 are similar if we can swap a maximum of two letters (in different positions) of R1, so that it equals R2.
+# For example, source one may have a restaurant named "omega grill" while another source may have the same restaurant as "omgea grill".
+# For example, "biryani" and "briyani" are similar (swapping at positions 1 and 2). 
+    "biryani" is not similar to following, "biryeni" (no e to swap with), "briynai"(Needs 2 swap)
+# For a given restaurant name, find and return all the similar restaurant names in the list.
+"""
+def similarRestaurants(name: str, restaurants: list[str]) -> list[str]:
+    """
+    idea:
+    1. len(R1) == len(R2)
+    2. R1 contains the same chrs with R2
+    3. SWAP only once: R1:  ...a....b...
+                        R2: ...b....a...
+        we do one swap, and see whether R1 == R2
+    """
+    res = []
+    for restaurant in restaurants:
+        if buddyStrings(name, restaurant):
+            res.append(restaurant)
+        else:
+            res.append("")
+    return res
+
+
+# 12. L1347: https://leetcode.cn/problems/minimum-number-of-steps-to-make-two-strings-anagram/
 class Solution:
     def minSteps(self, s: str, t: str) -> int:
         hmap = [0] * 26
@@ -380,6 +405,80 @@ follow up:，一个string到另一个string，每次换字母要把所有的同�
 过程：cnagrc‍‌ -> anagray -> anagram
 例子2: string1: anagram string2: cxagrcm。k：1。输出：false
 """
+def followup(str1, str2, k) -> bool:
+    """
+    求str1比str2多的字符->map1 和 str2比str1多的字符->map2, 
+    需要满足len(map1) == len(map2) == k（题目要求必须交换k次）且 两个map的key值拿出来排序的结果相等.
+    case: anagram 比 cnagrcy 多 {a:2, m:1}, cnagrcy比anagram 多{c:2, y:1}
+    """
+    if len(str1) != len(str2):
+        return False
+    diffMap = [0] * 26
+    for ch in str1:
+        diffMap[ord(ch) - ord('a')] += 1
+    for ch in str2:
+        diffMap[ord(ch) - ord('a')] -= 1
+    str1Remain = []
+    str2Remain = []
+    for num in diffMap:
+        if num > 0:
+            str1Remain.append(num)
+        elif num < 0:
+            str2Remain.append(-num)
+    str1Remain.sort()
+    str2Remain.sort()      
+    return str1Remain == str2Remain and len(str1Remain) == k
+
+# print(followup("anagram", "cnagrcy", 2))
+# print(followup("anagram", "cxagrcm", 1))
+# print(followup("anagram", "cxagrcm", 2))
+
+"""
+K-anagram
+# Given a restaurant name, find other restaurants in the list that are k-anagrams with each other. 
+A name is a k-anagram with another name if both the conditions below are true:
+# The names contain the same number of characters.
+# The names can be turned into anagrams by changing at most k characters in the strin‍‌g
+# For example:
+# name = "grammar", k = 3 and list = ["anagram"], "grammar" is k-anagram with "anagram" 
+since they contain the same number of characters and you can change 'r' to 'n' and 'm' to 'a'.
+# name = "omega grill", k = 2 and list = ["jmega frill"], "omega grill" is k-anagram with "jmega frill" 
+since they contain same number of characters and you can change 'o' to 'j' and 'g' to 'f'
+"""
+def k_anagram(name, restaurants:list) -> list:
+    """
+    constraint:
+    do R1 and R2 only consist of lowercase letters "a-z"?
+    time: O(N) N is the num of characters
+    space: O(n*len(name))
+    """
+    res = []
+    for item in restaurants:
+        if isKanagram(name, item):
+            res.append(item)
+        else:
+            res.append("")
+
+def isKanagram(str1, str2) -> bool: # - O(n)
+    if len(str1) != len(str2):
+        return False
+    chToCnt = dict()
+    for ch in str1:
+        if ch not in chToCnt:
+            chToCnt[ch] = 0
+        chToCnt[ch] += 1
+    for ch in str2:
+        if ch not in chToCnt:
+            chToCnt[ch] = 0
+        chToCnt[ch] -= 1
+    diff = 0
+    for k,v in chToCnt.items():
+        if v > 0:
+            diff += 1
+    return diff <= k
+
+
+
 
 # 13. L854: https://leetcode.cn/problems/k-similar-strings/
 from collections import deque
@@ -1347,3 +1446,240 @@ class Solution:
             else:
                 right = speed
         return left
+
+
+# 34. L1110: https://leetcode.cn/problems/delete-nodes-and-return-forest/
+# Definition for a binary tree node.
+# class TreeNode:
+#     def __init__(self, val=0, left=None, right=None):
+#         self.val = val
+#         self.left = left
+#         self.right = right
+class Solution:
+    def delNodes(self, root: Optional[TreeNode], to_delete: List[int]) -> List[TreeNode]:
+        """
+        use Postorder travelse
+        For node A,
+        if A is in to_delete:
+            1. if A.left != null: result.append(A.left)
+               if A.right != null: result.append(A.right)
+               if A in res: res.remove(res)
+            2. delete A: return null
+        """
+        to_delete = set(to_delete)
+        res = [root]
+        self.postOrderDel(root, to_delete, res)
+        return res
+    
+    def postOrderDel(self, root, to_delete, res) -> TreeNode:
+        if not root:
+            return None
+        root.left = self.postOrderDel(root.left, to_delete, res)
+        root.right = self.postOrderDel(root.right, to_delete, res)
+        if root.val in to_delete:
+            if root.left:
+                res.append(root.left)
+            if root.right:
+                res.append(root.right)
+            if root in res:
+                res.remove(root)
+            return None
+        return root
+
+
+# 35. L1143
+class Solution:
+    def longestCommonSubsequence(self, text1: str, text2: str) -> int:
+        """
+        dp[i][j]: the LCS of t1[0...i] and t2[0...j]
+        the result is dp[-1][-1]
+        func: 
+            if t1[i] == t2[j]:
+                dp[i][j] = dp[i-1][j-1] + 1
+            else:
+                dp[i][j] = max(dp[i-1][j], dp[i][j-1])
+        note: we can let dp[i][j] means the LCS of t1[0:i-1] and t2[0:j-1]
+              which makes dp[0][j] = 0 and dp[j][0] = 0
+              since t1[0:0] and t2[0:0] are empty string
+              This will make initiation part be simple
+              the result is dp[len(t1)][len(t2)]
+        """
+        # 1. init
+        dp = []
+        m = len(text1)
+        n = len(text2)
+        for _ in range(m+1):
+            dp.append((n+1) * [0])
+        # if text1[0] == text2[0]:
+        #     dp[0][0] = 1
+        # for i in range(1, m):
+        #     if text1[i] == text2[0]:
+        #         dp[i][0] = 1
+        #     else:
+        #         dp[i][0] = dp[i-1][0]
+        # for j in range(1, n):
+        #     if text1[0] == text2[j]:
+        #         dp[0][j] = 1
+        #     else:
+        #         dp[0][j] = dp[0][j-1]
+        # 2.
+        for i in range(1, m+1):
+            for j in range(1, n+1):
+                if text1[i-1] == text2[j-1]:
+                    dp[i][j] = dp[i-1][j-1] + 1
+                else:
+                    dp[i][j] = max(dp[i][j-1], dp[i-1][j])
+        return dp[m][n]
+
+# 36. L1235
+class Solution:
+    def jobScheduling(self, startTime: List[int], endTime: List[int], profit: List[int]) -> int:
+        """
+        dp[i] means the max profix within time i
+        dp[i][0] = time, dp[i][1] = profit
+        trans func:
+        dp[i] = max(dp[i-j][1] + dp[i][1], dp[i-1]), j is the rightmost end time less than i
+        """
+        jobs = sorted(zip(startTime, endTime, profit), key=lambda x: x[1])
+        dp = [[0, 0]] # [end time, profit]
+        for s, e, p in jobs:
+            prev_idx = bisect.bisect(dp, s, key=lambda x:x[0]) - 1
+            if dp[prev_idx][1] + p > dp[-1][1]:
+                dp.append([e, dp[prev_idx][1] + p]) 
+        
+        return dp[-1][1]
+
+# 37. L1268: https://leetcode.cn/problems/search-suggestions-system/
+class Trie:
+    def __init__(self):
+        self.children = collections.defaultdict(Trie)
+        self.prefixs = []
+class Solution:
+    def suggestedProducts(self, products: List[str], searchWord: str) -> List[List[str]]:
+        #1. build trie
+        root = Trie()
+        products.sort()
+        for word in products:
+            cur = root
+            for ch in word:
+                cur = cur.children[ch]
+                cur.prefixs.append(word)
+
+        #2. traverse Trie using searchWord
+        res = []
+        cur = root
+        i = 0
+        while i < len(searchWord):
+            if searchWord[i] not in cur.children:
+                break
+            cur = cur.children[searchWord[i]]
+            res.append(cur.prefixs[:3])
+            i += 1
+        while i < len(searchWord):
+            res.append([])
+            i += 1
+        return res
+
+# 38. L1779: https://leetcode.cn/problems/find-nearest-point-that-has-the-same-x-or-y-coordinate/
+class Solution:
+    def nearestValidPoint(self, x: int, y: int, points: List[List[int]]) -> int:
+        res = float('inf')
+        minDis = float('inf')
+        for i, (a, b) in enumerate(points):
+            if a != x and b != y:
+                continue
+            dis = self.getDistance(x, y, a, b)
+            if minDis >= dis:
+                if minDis == dis:
+                    res = min(res, i)
+                else:
+                    minDis = dis
+                    res = i
+        return res if res != float('inf') else -1
+
+        
+    def getDistance(self, x1, y1, x2, y2):
+        return abs(x1 - x2) + abs(y1 - y2)
+
+# 39. L1905: https://leetcode.cn/problems/count-sub-islands/
+class Solution:
+    def countSubIslands(self, grid1: List[List[int]], grid2: List[List[int]]) -> int:
+        """
+        idea: for every land in grid2,
+                if the land not in grid1:
+                    flood the whole island
+                else: do nothing.
+            Then, count the number of islands in grid2
+        """
+        m = len(grid2)
+        n = len(grid2[0])
+        for i in range(m):
+            for j in range(n):
+                if grid2[i][j] == 1 and grid1[i][j] == 0:
+                    self.dfs(grid2, i, j)
+        
+        cnt = 0
+        for i in range(m):
+            for j in range(n):
+                if grid2[i][j] == 1:
+                    cnt += 1
+                    self.dfs(grid2, i, j)
+        return cnt
+
+    
+    def dfs(self, grid2, i, j) -> None:
+        m = len(grid2)
+        n = len(grid2[0])
+        if i < 0 or i > m - 1 or j < 0 or j > n - 1:
+            return
+        if grid2[i][j] == 0:
+            return
+        
+        # flood
+        grid2[i][j] = 0
+        for nexti, nextj in [(i+1, j), (i-1, j), (i, j+1), (i, j-1)]:
+            self.dfs(grid2, nexti, nextj)
+
+# 40. L2065: https://leetcode.cn/problems/maximum-path-quality-of-a-graph/
+class Solution:
+    def __init__(self):
+        self.res = 0
+
+    def maximalPathQuality(self, values: List[int], edges: List[List[int]], maxTime: int) -> int:
+        """
+        Since There are at most four edges connected to each node 
+        and 10 <= timej, maxTime <= 100 that means len(path) <= 10.
+        if we iterate every path, the time complexity is O(4 ** 10)
+        so we could use dfs + backtracking
+        """
+        # build graph
+        graph = dict()
+        n = len(edges)
+        for src, dst, time in edges:
+            if src not in graph:
+                graph[src] = []
+            if dst not in graph:
+                graph[dst] = []
+            graph[src].append((dst, values[dst], time))
+            graph[dst].append((src, values[src], time))
+        # print(graph)
+        visited = set()
+        visited.add(0)
+        self.backtracking(graph, visited, 0, values[0], 0, maxTime)
+        return self.res
+            
+
+
+    def backtracking(self, graph, visited, node, quality, timeUsed, maxTime) -> None:
+        if node == 0:
+            self.res = max(self.res, quality)
+        if node not in graph:
+            return
+        for neighbor,val,cost in graph[node]:
+            if timeUsed + cost <= maxTime:
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    self.backtracking(graph, visited, neighbor, quality + val, timeUsed + cost, maxTime)
+                    visited.remove(neighbor)
+                else:
+                    self.backtracking(graph, visited, neighbor, quality, timeUsed+cost, maxTime)
