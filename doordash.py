@@ -657,6 +657,45 @@ class Solution:
 
 # 18. L286: https://leetcode.com/problems/walls-and-gates/
 # https://leetcode.com/discuss/interview-question/1522955/Doordash-Onsite
+def wallsAndGates(rooms: List[List[int]]) -> None:
+    """
+    Do not return anything, modify rooms in-place instead.
+    """
+    """
+    BFS from all gates at the same time
+    Time: O(mn)
+    Space: O(mn) queue's size
+    
+    """
+    INF = 2**31 - 1
+    queue = collections.deque()
+    m = len(rooms)
+    n = len(rooms[0])
+    visited = set()
+    for i in range(m):
+        for j in range(n):
+            if rooms[i][j] == 0:
+                queue.append((i, j))
+                visited.add((i, j))
+    
+    distance = 0
+    while len(queue) > 0:
+        size = len(queue)
+        for _ in range(size):
+            i, j = queue.popleft()
+            rooms[i][j] = distance
+            for nexti, nextj in [(i-1, j), (i+1, j), (i, j-1), (i, j+1)]:
+                if 0 <= nexti <= m-1 and 0 <= nextj <= n-1 and rooms[nexti][nextj] == INF and (nexti, nextj) not in visited:
+                    queue.append((nexti, nextj))
+                    visited.add((nexti, nextj))
+        distance += 1
+
+    """
+    Follow up，大概是：现在地图上‍‌还多了些customers 'C'，
+    离他最近的dashmart应该serve他，如果两个D离他距离一样那都可以serve他，
+    输出每个D可以serve的customer数量 / 输出serve customer最多的那个dashmart。
+    改变BFS入队条件即可
+    """
 def wallsAndGates(rooms):
     """
     Do not return anything, modify rooms in-place instead.
@@ -665,44 +704,33 @@ def wallsAndGates(rooms):
     BFS from all gates at the same time
     Time: O(mn)
     Space: O(mn) queue's size
-
-    follow up是 如果每个customer都去离自己最近的mart，
-    要找出每一个DashMart serve customers的数量。
-    只需要在BFS时记录customer会去哪个mart, 这个结果会传递给下一轮BFS.
-    同时martToCustomers[mart] += 1
-    
     """
     INF = 2**31 - 1
     queue = collections.deque()
     m = len(rooms)
     n = len(rooms[0])
-    visited = set()
     martToCustomers = {}
     for i in range(m):
         for j in range(n):
             if rooms[i][j] == 0:
                 queue.append((i, j, (i,j)))
-                visited.add((i, j))
                 martToCustomers[(i, j)] = 0
-
     
     distance = 0
     while len(queue) > 0:
         size = len(queue)
         for _ in range(size):
             i, j, mart = queue.popleft()
-            if rooms[i][j] == INF:
+            if rooms[i][j] != 0 and rooms[i][j] >= distance:
                 martToCustomers[mart] += 1
                 rooms[i][j] = distance
             for nexti, nextj in [(i-1, j), (i+1, j), (i, j-1), (i, j+1)]:
-                if 0 <= nexti <= m-1 and 0 <= nextj <= n-1 and rooms[nexti][nextj] == INF and (nexti, nextj) not in visited:
-                    queue.append((nexti, nextj, mart))
-                    visited.add((nexti, nextj))
+                if 0 <= nexti <= m-1 and 0 <= nextj <= n-1:
+                    if rooms[nexti][nextj] >= distance + 1:
+                        queue.append((nexti, nextj, mart))
         distance += 1
-
     print(martToCustomers)
 
-# wallsAndGates([[2147483647,-1,0,2147483647],[2147483647,2147483647,2147483647,-1],[2147483647,-1,2147483647,-1],[0,-1,2147483647,2147483647]])
 
 
 # 19. L289: https://leetcode.cn/problems/game-of-life/
@@ -1292,6 +1320,10 @@ class Solution:
 
 # 30. L826: https://leetcode.cn/problems/most-profit-assigning-work/
 """
+for worker[i], we need to find the maxProfit when the difficulty interval falls [1, work[i]]
+1. sort (difficulty, profix)
+2. sort worker
+3. iterate worker, res += maxProfit
 Time: O(nlogn + mlogm) sort
 Space: O(n) jobs
 """
@@ -1312,7 +1344,21 @@ class Solution:
         return res
 """
 Followup：假设skill和difficulty都是1-100的整数‍‌，要求用O(M+N)的时间
+1. use a int[101] array A to record the maxProfit, A[i] means the maxProfit when difficulty <= i
+2. for worker[i], res += A[i]
+
+Time: O(100*M + N) = O(M+N)
 """
+def maxProfit(difficulty, profit, worker):
+    A = [0] * 101
+    for i, diff in enumerate(difficulty):
+        for j in range(1, diff+1):
+            A[j] = max(A[j], profit[i])
+
+    res = 0
+    for skill in worker:
+        res += A[skill]
+    return res
 
 # 31. L838: https://leetcode.com/problems/push-dominoes/
 class Solution:
@@ -1683,3 +1729,299 @@ class Solution:
                     visited.remove(neighbor)
                 else:
                     self.backtracking(graph, visited, neighbor, quality, timeUsed+cost, maxTime)
+
+# 41. 
+"""
+Given a list of cities' name -- c: ['C1', 'C2', 'C3'], 
+the coordinates lists of the cites -- x: [1, 2, 3], y: [3, 2, 3], 
+target city list -- q: ['C2', 'C3']
+Find the city that shares coordinates (x or y) with the city in the target city list. If not found, return 'None'
+If there are more than one city sharing coordinates, then return the one which is the closest to the target city. 
+Use Manhattan Distance for distance calculating(abs(x1 - x2) + abs(y1 - y2)).
+If the distances of the cities are the same, then sort the name in lexicographical order, and return the smaller one.
+Example:
+c: ['C1', 'C2', 'C3']
+x: [1, 2, 3]
+y: [3, 2, 3]
+q: ['C2', 'C3']
+return: ['None', 'C1']
+follow up 问如何优化。
+"""
+"""
+idea:
+1. use hashmap, xMap and yMap, key is coordinate(x or y), 
+    value is a SortedList of tuple(distance,city name) which sorted by distance and name. - O(ClogK)
+    K is the longest lenth of citys with same coordinate.
+2. for each target city, get the closest city from xMap and yMap using binarySearch,
+    - get sortedList from xMap(yMap) = xMap.get(x) - O(1), 
+      then do binarySearch - O(logK)
+Time: O(ClogK + QlogK), Q is the len(q)
+Space: the size of hashmap = O(C)
+"""
+from sortedcontainers import SortedList
+def getClosestCity(cities: list[str], X: list[int], Y:list[int], target: list[str]) -> list[str]:
+    #1. create hmaps
+    cityToPos = dict()
+    xmap = dict()
+    ymap = dict()
+    n = len(cities)
+    for i in range(n):
+        if X[i] not in xmap:
+            xmap[X[i]] = SortedList()
+        if Y[i] not in ymap:
+            ymap[Y[i]] = SortedList()
+        xmap[X[i]].add((Y[i], cities[i]))
+        ymap[Y[i]].add((X[i], cities[i]))
+        cityToPos[cities[i]] = (X[i], Y[i])
+    #2.
+    res = []
+    for city in target:
+        x, y = cityToPos[city]
+        xNeighbors = xmap.get(x)
+        yNeighbors = ymap.get(y)
+        if len(xNeighbors) > 1 and len(yNeighbors) > 1:
+            xCity = getClosestCityInLine(xNeighbors, y)
+            yCity = getClosestCityInLine(yNeighbors, x)
+            res.append(min(xCity, yCity))
+        elif len(xNeighbors) > 1:
+            res.append(getClosestCityInLine(xNeighbors, y))
+        elif len(yNeighbors) > 1:
+            res.append(getClosestCityInLine(yNeighbors, x))
+        else:
+            res.append("None")
+    return res
+
+def getClosestCityInLine(neighbors, value) -> str:
+            city = ""
+            index = bisect.bisect_left(neighbors, value, key=lambda v: v[0])
+            if index == len(neighbors) - 1:
+                city = neighbors[index - 1][1]
+            elif index == 0:
+                city = neighbors[index+1][1]
+            else:
+                if abs(y - neighbors[index+1][0]) > abs(value - neighbors[index-1][0]):
+                    city = neighbors[index-1][1]
+                elif abs(y - neighbors[index+1][0]) < abs(value - neighbors[index-1][0]):
+                    city = neighbors[index+1][1]
+                else:
+                    city = min(neighbors[index+1][1], neighbors[index-1][1])
+            return city
+
+
+# 42.
+"""
+给一个unsorted 的一串数字，数字代表的是每个糖果的价格，现在有一个优惠活动叫“买二送一”，
+问需要花最小的钱把所有的糖果都买下来。我类推了几个test cases，
+跟他说了我的思路，先从大到小排序数组，
+然后遍历数组实现“take 2 skip 1”这样就能是先用最少的钱买下所有糖果。
+"""
+# todo
+
+# 43. 给List<食物价格>和List<卡路里>和一个double预算， 求预算内最大卡路里
+def _01_knapsack()
+# dp[j] means: within j budget, the max calorie we can gain.
+    price = [1,3,4] # price
+    calorie = [15, 20, 30] # calorie
+    budget = 4 # budget
+
+    dp = [0] * (budget + 1)
+    for i in range(len(price)):
+        for j in range(budget, price[i] - 1, -1):
+            dp[j] = max(dp[j], dp[j-price[i]] + calorie[i])
+    
+    print(dp[-1])   
+
+# 44. https://leetcode.com/discuss/interview-question/1367130/doordash-&#8205;&#8204;&#8204;&#8204;&#8204;&#8204;&#8205;&#8204;&#8204;&#8204;&#8204;&#8204;&#8205;&#8204;&#8205;&#8204;&#8205;&#8205;&#8204;phone-interview
+"""
+At DoorDash, menus are updated daily even hourly to keep them up-to-date. Each menu can be regarded as a tree. A menu can have many categories; each category can have many menu_items; each menu_item can have many item_extras; An item_extra can have many item_extra_options…
+
+class Node {
+        String key;
+        int value;
+        boolean active;
+        List<Node> children;
+ }
+We will compare the new menu sent from the merchant with our existing menu. 
+Each item can be considered as a node in the tree. 
+The definition of a node is defined above. 
+Either value change or the active status change means the node has been changed. 
+There are times when the new menu tree structure is different from existing trees, 
+which means some nodes are set to null. 
+In this case, we only do soft delete for any nodes in the menu. 
+If that node or its sub-children are null, we will treat them ALL as inactive. 
+There are no duplicate nodes with the same key.
+
+Return the number of changed nodes in the tree.
+
+        Existing tree                                        
+         a(1, T)                                                
+        /       \                                                          
+     b(2, T)   c(3, T)                                               
+    /     \           \                                                        
+d(4, T) e(5, T)   f(6, T)                                               
+
+        New tree 
+        a(1, T)
+            \
+           c(3, F)
+               \
+               f(66, T)
+a(1, T) a is the key, 1 is the value, T is True for active status
+For example, there are a total of 5 changed nodes. Node b, Node d, Node e are automatically set to inactive. The active status of Node c and the value of Node f changed as well.
+
+      Existing tree                                                   
+        a(1, T)                                                 
+      /         \                                                 
+    b(2, T)   c(3, T)                                   
+  /       \           \                                          
+d(4, T) e(5, T)      g(7, T)                       
+
+            New tree
+            a(1, T)
+          /        \                                             
+   b(2, T)         c(3, T)  
+   /    |    \           \    
+d(4, T) e(5, T) f(6, T)    g(7, F) 
+"""
+class Node:
+    def __init__(self, key, value, isActive):
+        self.key = key
+        self.value = value
+        self.isActive = isActive
+        self.children = []
+
+    def equals(self, node: 'Node'):
+        if node is None:
+            return False
+
+        return self.key == node.key and self.value == node.value and self.isActive == node.isActive
+
+def get_modified_items(oldMenu, newMenu):
+
+    if oldMenu is None and newMenu is None:
+        return 0
+
+    count = 0
+    if oldMenu is None or newMenu is None or not oldMenu.equals(newMenu):
+        count += 1
+
+    child1 = get_child_nodes(oldMenu)
+    child2 = get_child_nodes(newMenu)
+
+    for k in child1.keys():
+        count += get_modified_items(child1.get(k), child2.get(k))
+
+    for k in child2.keys():
+        if k not in child1:
+            count += get_modified_items(None, child2.get(k))
+
+    return count
+
+def get_child_nodes(menu: 'Node'):
+    m = {}
+    if menu is None:
+        return m
+
+    for node in menu.children:
+        m[node.key] = node
+
+    return m
+
+# 45.
+"""
+给了一条题目是给了一系列Pick up和delivery的item，然后计算Dasher需要拿多少钱佣金 比如
+19:00,Order A, PickUp,
+19:05, Order B, PickUp
+19:30, Order B, Delivered
+19:40, Order A, Deilvered
+一分钟的佣金是 30美分，那么这个Dasher 应该的佣金是
+（19:05 - 19:00） * 30 + (19:30-19:05) * 2 (因为同时有2单) * 30 + (19:40 - 19:30) * 30 = 150+1500+300 = 1950美分
+
+idea: build a hashmap: key is orderID, value is a tuple(pickTime, endTime)
+for each order, caculate time_cost * 30.
+"""
+
+# 46
+"""
+https://leetcode.com/discuss/interview-question/1302606/DoorDash-onsite-interview-(new-question!)
+Given a sequence of timestamps & actions of a dasher's activity within a day, 
+we would like to know the active time of the dasher. 
+Idle time is defined as the dasher has NO delivery at hand. 
+(That means all items have been dropped off at this moment and the dasher is just waiting for another pickup) 
+Active time equals total time minus idle time. Below is an example. 
+Dropoff can only happen after pickup. 12:00am means midnight and 12:00pm means noon. 
+All the time is within a day.
+
+idea: can use a stack, 
+when dropoff, pick_time = stack.pop(), 
+            if stack.empty(), active_time += getDuration(droptime, picktime)
+"""
+
+# 47.
+"""
+还有一道是新题。大概意思是有一个数组，可以set（所有元素变成1）， unset（所有元素变成0），flip（所有1变成0,0变成1），
+问怎么用O（1）来实现这个几个操作。
+基本解题思路是，我们不可以用数组来记录真是的数值，因为这样子子flip就是O（N）。
+我们用一个全局变量来记录flip的奇偶性，然后数组就记录真实值和flip的区别，
+the real value at index i = （flip_count + value at index i ）% 2
+"""
+
+# 48.
+"""
+给一个数组，[2,5,4,9,1] 找到每一次最小的peak，就是比左右都大的数，然后输出
+比如上例，输出就是5, 9, 4, 2, 1
+一个数组，按大小打印元素，但元素要符合条件a[k-1]<a[k]>a[k+1]，符合这种条件的按大小打印a[k].
+
+idea: monotonic stack, from top to bot, larger -> small
+"""
+
+# 49.Encode Hours
+class StoreTime():
+    def __init__(self):
+        self.day = 0
+        self.min = 0
+    def add_minutes(self, extra_mins):
+        self.min = (self.min // extra_mins) * extra_mins
+        self.min += extra_mins
+        if self.min >= 1440:
+            self.min = self.min % 1440
+            self.day += 1
+            if self.day > 7 :
+                self.day = self.day % 7
+
+    def equals(self, time) -> bool:
+        return self.day == time.day and self.min == time.min
+
+    def to_format(self):
+        # return "{} {}:{}".format(self.day, str(self.min//60).zfill(2), str(self.min%60).zfill(2))
+        return f"{self.day}{str(self.min//60).zfill(2)}{str(self.min%60).zfill(2)}"
+def get_storetime_token(s):
+    dic = {
+      'mon': 1,
+      'tue': 2,
+      'wed': 3,
+      'thu': 4,
+      'fri': 5,
+      'sat': 6,
+      'sun': 7
+      }
+    s = s.split(' ') 
+    dt, hr, tp = s[0], s[1], s[2]
+    day = dic[dt]
+    extra_hour = int(12 if tp == 'pm' else 0) # 'pm'->12 , 'am'=>0
+    hour = int(hr.split(':')[0])
+    mins = int(hr.split(':')[1])
+    st = StoreTime()
+    st.day = day
+    st.min = (hour+extra_hour) * 60 + mins
+    return st
+def conver_tokens(start, end):
+    st1 = get_storetime_token(start)
+    st2 = get_storetime_token(end)
+    res = []
+    # while st1.day * 24 * 60 + st1.min <= st2.day * 24 * 60 + st2.min:
+    while not st1.equals(st2):
+        st1.add_minutes(5)
+        res.append(st1.to_format())
+    return res
+# print(conver_tokens('sun 11:55 pm', 'mon 00:05 am'))
