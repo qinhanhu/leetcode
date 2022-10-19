@@ -57,7 +57,8 @@ class Solution:
                     for index in neighbors[arr[cur]]:
                         if index not in visited:
                             queue.append(index)
-                    neighbors[arr[cur]].clear()
+                    # neighbors[arr[cur]].clear()
+                    del neighbors[arr[cur]] # delete the list to prevent redundant search
             steps += 1
 
 #3. L721: https://leetcode.com/problems/accounts-merge/
@@ -163,11 +164,12 @@ class Solution:
                 newend = sortedlist[i][1]
         return res
 
-#5. L84:
+#5. L84: https://leetcode.com/problems/largest-rectangle-in-histogram/
 class Solution:
     def largestRectangleArea(self, heights: List[int]) -> int:
         """
-        1. For height i, find the left and right closest coloumns which are shorter then height[i].(MonoticStack)
+        1. For height i, find the left and right closest coloumns 
+           which are shorter then height[i].(MonotonicStack)
         2. Caculate area = height[i] * (right - left - 1)
         i.e. heights = [2,1,5,6,2,3]
              for i = 2, height[2] = 5
@@ -344,6 +346,7 @@ class Solution:
         n, m = len(s), len(goal)
         if n != m:
             return False
+        # case: s == goal == "aba" -> True; s == goal == "abc" -> False
         if s == goal:
             return len(set(s)) < m
         
@@ -368,10 +371,9 @@ def similarRestaurants(name: str, restaurants: list[str]) -> list[str]:
     """
     idea:
     1. len(R1) == len(R2)
-    2. R1 contains the same chrs with R2
-    3. SWAP only once: R1:  ...a....b...
-                        R2: ...b....a...
-        we do one swap, and see whether R1 == R2
+    2. case: s == goal == "aba" -> True; s == goal == "abc" -> False
+    3. only condition approved: R1:  ...a....b...
+                                 R2: ...b....a...
     """
     res = []
     for restaurant in restaurants:
@@ -510,7 +512,7 @@ class Solution:
             k += 1
         return -1
         
-# 14. L36
+# 14. L36: https://leetcode.cn/problems/valid-sudoku/
 class Solution:
     def isValidSudoku(self, board: List[List[str]]) -> bool:
         rowSet, colSet, blockSet = [], [], []
@@ -536,7 +538,7 @@ class Solution:
                 blockSet[int(i / 3) * 3 + int(j / 3)][val] += 1
         return True
 
-# 15. L37
+# 15. L37 # https://leetcode.cn/problems/sudoku-solver/
 class Solution:
     def solveSudoku(self, board: List[List[str]]) -> None:
         """
@@ -617,7 +619,7 @@ class Solution:
         self.maxSum = max(self.maxSum, root.val + leftMax + rightMax)
         return max(root.val, leftMax + root.val, rightMax + root.val)
 
-# 17. L210
+# 17. L210: https://leetcode.cn/problems/course-schedule-ii/
 from collections import deque
 class Solution:
     def findOrder(self, numCourses: int, prerequisites: List[List[int]]) -> List[int]:
@@ -834,7 +836,7 @@ class Codec:
         node.right = self.deserializeHelper(que)
         return node
             
-# 21. L428
+# 21. L428: https://leetcode.com/problems/serialize-and-deserialize-n-ary-tree/
 """
 # Definition for a Node.
 class Node(object):
@@ -887,12 +889,12 @@ class Codec:
 # codec = Codec()
 # codec.deserialize(codec.serialize(root))
 
-# 22. L317
+# 22. L317: https://leetcode.com/problems/shortest-distance-from-all-buildings/
 class Solution:
     def shortestDistance(self, grid: List[List[int]]) -> int:
         """
         1. for every building, 
-           get shortest travel distances between the building with every empty land.      (using BFS)
+           get shortest travel distances between the building with every empty land.(using BFS)
            
            i.e. we can get
                 STDfromB1 = [m * n]
@@ -976,7 +978,7 @@ class Solution:
             ..2 [2,res(6)]
             ..1 [1, res(2)]
         
-        2. do BFS start from nodes with biggest value and forward by decreasing path
+        2. do BFS start from nodes with "largest" value and forward by decreasing path
            i.e. [9, 6, 2, 1]
            which we could use Topological Sort algo:
            For this case: 
@@ -1021,7 +1023,7 @@ class Solution:
             res += 1
         return res
 
-# 24. LC341
+# 24. LC341: https://leetcode.cn/problems/flatten-nested-list-iterator/
 # """
 # This is the interface that allows for creating nested lists.
 # You should not implement it, or speculate about its implementation
@@ -1077,7 +1079,7 @@ class NestedIterator:
 # i, v = NestedIterator(nestedList), []
 # while i.hasNext(): v.append(i.next())
 
-# 25. LC463
+# 25. LC463: https://leetcode.cn/problems/island-perimeter/
 class Solution:
     def islandPerimeter(self, grid: List[List[int]]) -> int:
         m = len(grid)
@@ -2025,3 +2027,81 @@ def conver_tokens(start, end):
         res.append(st1.to_format())
     return res
 # print(conver_tokens('sun 11:55 pm', 'mon 00:05 am'))
+
+# 50.
+"""
+Given list of OrderActivity and basePay/minute for one Dasher, calculate the total pay of the dasher. Consider this is for one dasher, and all activities happened within single day
+class OrderActivity {
+  int hour; // the hour of this event happened
+  int minute;
+  OrderStatus status;
+  String orderId;
+  String dasherId;
+}
+enum OrderStatus {
+  ACCEPTED;
+  FULFILED;
+}
+For example, the basePay is 0.3/minute
+at 6:15, dasher accepted the order A// from 15-30, 1 order is open, pay = 15 minutes * 0.3
+at 6:30, dasher accepted the order B// from 30-35, 2 order is open, pay = 5 minutes * 0.3 * 2
+at 6:35, dasher fulfilled the order A// from 35-40, 1 order is open, pay = 5 minutes * 0.3
+at 6:40, dasher fulfilled the order B// total pay = add all above together
+Follow up constraint: try solve it in O(1) space complexity
+Follow up question: OrderStatus contain 2 more type as
+enum OrderStatus {
+  ACCEPTED;
+  FULFILED;
+  ARRIVED;// dasher arrived at restaurant
+  PICKEDUP; // dasher picked up the order
+}
+For example, the basePay is 0.3/minute
+at 6:15, dasher accepted the order A// from 15-30, 1 order is open, pay = 15 minutes * 0.3
+at 6:30, dasher accepted the order B// from 30-35, 2 order is open, pay = 5 minutes * 0.3 * 2
+at 6:35, dasher arrived at restaurant A //from 35-40, dasher wait for order A and only count for 1 order pay. pay = 5 * 0.3 * 1
+at 6:40, dasher picked up at restaur‍‌ant A // from 40-45, 2 orders are open
+at 6:45, dasher arrived at restaurant B //from 45-48, dasher wait for orderB and count for 1 order pay. pay = 3 * 0.3 * 1
+at 6:48, dasher picked up at restaurant B //from 48-50, 2 order are open
+at 6:50, dasher fulfilled the order A// from 35-40, 1 order is open, pay = 5 minutes * 0.3
+at 6:55, dasher fulfilled the order B// total pay = add all above together
+
+idea: use a varable orderNum to record how many orders are actively making profit
+    when the orderNum change(+1 or -1), update profit gained up to now
+Time: O(n)
+Space: O(1)
+"""
+class OrderActivity:
+    def __init__(self, hour, minute, status):
+        self.hour = hour
+        self.minute = minute
+        self.status = status
+
+def getProfit(orders: list['OrderActivity'], basePay:float):
+    orderNum = 1
+    profit = 0
+    n = len(orders)
+    for i in range(1, n):
+        status = orders[i].status
+        if status == "ACCEPTED" or status == "PICKEDUP":
+            profit += orderNum * getDuration(orders[i], orders[i-1])
+            orderNum += 1
+        elif status == "FULFILED" or status == "ARRIVED":
+            profit += orderNum * getDuration(orders[i], orders[i-1])
+            orderNum -= 1
+    return profit
+
+def getDuration(order, preorder):
+    h1, m1 = int(order.hour), int(order.minute)
+    total1 = h1 * 60 + m1
+    h2, m2 = int(preorder.hour), int(preorder.minute)
+    total2 = h2 * 60 + m2
+    if total1 >= total2:
+        return total1 - total2
+    return 24 * 60 - total2 + total1
+
+# data = [OrderActivity(6, 15, "ACCEPTED"), OrderActivity(6, 30, "ACCEPTED"),OrderActivity(6, 35, "ARRIVED"), 
+# OrderActivity(6, 40, "PICKEDUP"),OrderActivity(6, 45, "ARRIVED"), OrderActivity(6, 48, "PICKEDUP"), 
+# OrderActivity(6, 50, "FULFILED"),OrderActivity(6, 55, "FULFILED")]
+# print(getProfit(data, 0.3))
+
+
