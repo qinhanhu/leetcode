@@ -289,3 +289,69 @@ class Solution:
             if indegree[i] == n-1 and outdegree[i] == 0:
                 return i
         return -1
+
+
+# 13. L2182: https://leetcode.cn/problems/construct-string-with-repeat-limit/
+import heapq
+class Solution:
+    def repeatLimitedString(self, s: str, repeatLimit: int) -> str:
+        counter = dict()
+        for ch in s:
+            if ch not in counter:
+                counter[ch] = 0
+            counter[ch] += 1
+        maxheap = []
+        for ch, cnt in counter.items():
+            heapq.heappush(maxheap, (-ord(ch), cnt))
+        
+        res = ""
+        while maxheap:
+            largest = heapq.heappop(maxheap)
+            if repeatLimit >= largest[1]:
+                res += chr(-largest[0]) * largest[1]
+            else:
+                res += repeatLimit * chr(-largest[0])
+                if maxheap:
+                    secondLarge = heapq.heappop(maxheap)
+                    res += chr(-secondLarge[0])
+                    if secondLarge[1] - 1 > 0:
+                        heapq.heappush(maxheap, (secondLarge[0], secondLarge[1] - 1))
+                    heapq.heappush(maxheap, (largest[0], largest[1] - repeatLimit))
+        return res
+
+# 14 L93: https://leetcode.com/problems/restore-ip-addresses/
+class Solution:
+    def __init__(self):
+        self.path = []
+        self.res = []
+
+    def restoreIpAddresses(self, s: str) -> List[str]:
+        
+        def backtracking(s, start:int):
+            if len(self.path) > 4:
+                return
+            if start == len(s) and len(self.path) == 4:
+                self.res.append(".".join(self.path))
+                return
+            
+            for i in range(start, len(s)):
+                if i - start + 1 > 3:
+                    return
+                if self.isLeadingZero(s[start:i+1]):
+                    return
+                if int(s[start:i+1]) > 255:
+                    return
+                self.path.append(s[start:i+1])
+                backtracking(s, i+1)
+                self.path.pop()
+        
+        backtracking(s, 0)
+        return self.res
+        
+
+    def isLeadingZero(self, s:str):
+        if s == "0":
+            return False
+        elif s[0] == "0":
+            return True
+        return False
