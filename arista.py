@@ -355,3 +355,17 @@ class Solution:
         elif s[0] == "0":
             return True
         return False
+
+# 15. L1228: https://leetcode.com/problems/missing-number-in-arithmetic-progression/
+class Solution:
+    def missingNumber(self, arr: List[int]) -> int:
+        left = 0
+        right = len(arr)
+        d = (arr[-1] - arr[0]) // len(arr)
+        while left < right:
+            mid = left + (right - left) // 2
+            if arr[mid] == arr[0] + mid * d:
+                left = mid + 1
+            else:
+                right = mid
+        return arr[0] + left * d
