@@ -167,7 +167,7 @@ time: worst: O(n**2) - sorted array
       avg: O(nlogn)
       best: O(nlogn)
 space: O(log(n))
-in place: false
+in place: false/true depends on how define "in place" 
 stable: false
 """
 def quickSort(array):
