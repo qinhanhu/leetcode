@@ -85,22 +85,17 @@ class Solution:
         if node.right:
             return leftmost(node.right)
         else:
-            traverse to his parent until meet a node who has larger value
+            traverse to its parent until it is a left child of the parent, return the parent
         
         """
-        
         if node.right:
             cur = node.right
             while cur.left:
                 cur = cur.left
             return cur
-        cur = node.parent
-        while cur:
-            if cur.val > node.val:
-                return cur
-            else:
-                cur = cur.parent
-        return cur
+        while node.parent and node == node.parent.right:
+            node = node.parent
+        return node.parent
 
 # 5. L545: https://leetcode.com/problems/boundary-of-binary-tree/
 # Definition for a binary tree node.
@@ -369,3 +364,141 @@ class Solution:
             else:
                 right = mid
         return arr[0] + left * d
+
+# 16. https://leetcode.cn/problems/yuan-quan-zhong-zui-hou-sheng-xia-de-shu-zi-lcof/
+# https://leetcode.cn/problems/yuan-quan-zhong-zui-hou-sheng-xia-de-shu-zi-lcof/solution/huan-ge-jiao-du-ju-li-jie-jue-yue-se-fu-huan-by-as/
+class Solution:
+    def lastRemaining(self, n: int, m: int) -> int:
+        """
+        f(n, m) = (f(n-1, m) + m) % ni
+        dp[i] = f(i, m) represents the index of the last remain Num when n=i 
+        """
+
+        dp = [0] * (n+1)
+        dp[1] = 0
+        for i in range(2, n+1):
+            dp[i] = (dp[i-1] + m) % i
+        return dp[n]
+
+# 17. https://leetcode.com/problems/moving-average-from-data-stream/
+from collections import deque
+class MovingAverage:
+
+    def __init__(self, size: int):
+        self.size = size
+        self.sum = 0
+        self.que = deque()
+    def next(self, val: int) -> float:
+        if len(self.que) == self.size:
+            self.sum -= self.que.popleft()
+        self.sum += val
+        self.que.append(val)
+        return self.sum / len(self.que)
+        
+# Your MovingAverage object will be instantiated and called as such:
+# obj = MovingAverage(size)
+# param_1 = obj.next(val)
+
+# 18. https://leetcode.com/problems/product-of-array-except-self/
+class Solution:
+    def productExceptSelf(self, nums: List[int]) -> List[int]:
+        zeroCnt = nums.count(0)
+        n = len(nums)
+        if zeroCnt >= 2:
+            return [0] * n
+        product = 1
+        for num in nums:
+            if num != 0:
+                product *= num
+        res = []
+        if zeroCnt == 1:
+            for num in nums:
+                if num != 0:
+                    res.append(0)
+                else:
+                    res.append(product)
+        else:
+            for num in nums:
+                res.append(product // num)
+        return res
+
+# 19. https://leetcode.cn/problems/validate-ip-address/
+class Solution:
+    def __init__(self):
+        self.ipv6Chr = "0123456789abcdefABCDEF"
+    def validIPAddress(self, queryIP: str) -> str:
+        if "." in queryIP and self.isIPv4(queryIP):
+            return "IPv4"
+        elif ":" in queryIP and self.isIPv6(queryIP):
+            return "IPv6"
+        return "Neither"
+    
+    def isIPv4(self, query: str) -> bool:
+        query = query.split(".")
+        if len(query) != 4:
+            return False
+        for num in query:
+            if not num:
+                return False
+            if num[0] == "0" and len(num) != 1:
+                return False
+            if not num.isdigit():
+                return False
+            if int(num) < 0 or int(num) > 255:
+                return False
+        return True
+    
+    def isIPv6(self, query: str) -> bool:
+        query = query.split(":")
+        if len(query) != 8:
+            return False
+        for item in query:
+            if len(item) < 1 or len(item) > 4:
+                return False
+            for ch in item:
+                if ch not in self.ipv6Chr:
+                    return False
+        return True
+
+# 20. https://leetcode.cn/problems/remove-duplicates-from-sorted-list-ii/
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, val=0, next=None):
+#         self.val = val
+#         self.next = next
+class Solution:
+    def deleteDuplicates(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        fakeHead = ListNode()
+        fakeHead.next = head
+        prev = fakeHead
+        cur = head
+        while cur and cur.next:
+            if cur.val == cur.next.val:
+                while cur and cur.next and cur.val == cur.next.val:
+                    cur = cur.next
+                if cur.next:
+                    prev.next = cur.next
+                    cur = cur.next
+                else:
+                    prev.next = None
+            else:
+                prev = cur
+                cur = cur.next
+        return fakeHead.next
+
+# 21. https://leetcode.cn/problems/contains-duplicate-iii/
+from sortedcontainers import SortedList
+class Solution:
+    def containsNearbyAlmostDuplicate(self, nums: List[int], indexDiff: int, valueDiff: int) -> bool:
+        window = SortedList()
+        for i, num in enumerate(nums):
+            if i > indexDiff:
+                window.remove(nums[i - indexDiff - 1])
+            window.add(num)
+            idx = bisect.bisect_left(window, num)
+            # print(window)
+            if idx > 0 and abs(window[idx-1] - num) <= valueDiff:
+                return True
+            if idx < len(window) - 1 and abs(window[idx+1] - num) <= valueDiff:
+                return True
+        return False

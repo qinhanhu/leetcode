@@ -211,7 +211,7 @@ class MinHeap:
 
     def buildHeap(self, array): # O(n)
         """
-        from the last parent to the fitst one:
+        from the last parent to the first one:
         do siftDown
         """
         lastIndex = len(array) - 1

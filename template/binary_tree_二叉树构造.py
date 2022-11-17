@@ -97,3 +97,96 @@ class Solution:
         root.right = self.build(preorder, preStart+leftSize+1, preEnd, postorder, idx+1, postEnd-1, val2idx)
         return root
 
+# 序列化反序列化 - 前序遍历
+# https://leetcode.cn/problems/serialize-and-deserialize-binary-tree/submissions/
+# Definition for a binary tree node.
+# class TreeNode(object):
+#     def __init__(self, x):
+#         self.val = x
+#         self.left = None
+#         self.right = None
+
+class Codec:
+    def serialize(self, root):
+        """Encodes a tree to a single string.
+        
+        :type root: TreeNode
+        :rtype: str
+        """
+        result = []
+        self.serializeHelper(root, result)
+        return ",".join(result)
+    
+    def serializeHelper(self, root, result):
+        if not root:
+            result.append("#")
+            return
+        
+        result.append(str(root.val))
+        self.serializeHelper(root.left, result)
+        self.serializeHelper(root.right, result)
+        
+
+    def deserialize(self, data):
+        """Decodes your encoded data to tree.
+        
+        :type data: str
+        :rtype: TreeNode
+        """
+        que = collections.deque(data.split(","))
+        root = self.deserializeHelper(que)
+        return root
+    
+    def deserializeHelper(self, que):
+        if not que:
+            return None
+        cur = que.popleft()
+        if cur == "#":
+            return None
+        root = TreeNode(int(cur))
+        root.left = self.deserializeHelper(que)
+        root.right = self.deserializeHelper(que)
+        return root
+
+# L428 N叉树
+class Codec:
+    # def __init__(self):
+    #     self.res = ""
+    def serialize(self, root: 'Node') -> str:
+        """Encodes a tree to a single string.
+        
+        :type root: Node
+        :rtype: str
+        """
+        res = []
+        self.serializeHelper(root, res)
+        return ",".join(res)
+    def serializeHelper(self, root, res:list):
+        if not root:
+            return ""
+        res.append(str(root.val))
+        res.append(str(len(root.children)))
+        for child in root.children:
+            self.serializeHelper(child, res)
+        
+    
+    def deserialize(self, data: str) -> 'Node':
+        """Decodes your encoded data to tree.
+        
+        :type data: str
+        :rtype: Node
+        """
+        if not data:
+            return None
+        data = collections.deque(data.split(","))
+        return self.deserializeHelper(data)
+        
+    def deserializeHelper(self, data):
+        if len(data) < 1:
+            return None
+        val = data.popleft()
+        node = Node(int(val), [])
+        size = int(data.popleft())
+        for _ in range(size):
+            node.children.append(self.deserializeHelper(data))
+        return node

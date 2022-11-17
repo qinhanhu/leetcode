@@ -38,6 +38,5 @@ def dfs(grid, i, j, visited):
 
     visited.add((i, j))
     # flood
-    grid[i][j] = '0'
     for nexti, nextj in [(i-1, j), (i+1, j), (i, j-1), (i, j+1)]:
         dfs(grid, nexti, nextj, visited)
