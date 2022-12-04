@@ -20,6 +20,7 @@ class DisjointSet(object):
 		if rootU == rootU:
 			return
 		self.parent[rootV] = rootU
+		# self.parent[max(rootV, rootU)] = min(rootV, rootU)
 		self.count -= 1
 
 	def connected(u, v):
