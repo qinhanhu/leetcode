@@ -30,6 +30,9 @@ class Solution:
             return res
 
 def dijkstra(start, graph):
+    """
+    Time: O(V + ElogV)
+    """
         
     # 维护start到各个点的最短路径权重
     disFromStart = [float('inf')] * n
