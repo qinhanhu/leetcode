@@ -2,7 +2,7 @@
 #example: 
 #      array = [1,2,3] value = 4, left = 0, right = len(array) = 3
 #      return 3
-
+import bisect
 def lower_bound(array, value):
     left = 0
     right = len(array)
@@ -24,7 +24,7 @@ def lower_bound(array, value):
 
 # print(lower_bound([1,2,2,3], 2))
 # import bisect
-# print(bisect.bisect_left([1,2,2,3], 2))
+# print(bisect.bisect_left([1,2,2,3], 1))
 def upper_bound(array, value):
     left = 0
     right = len(array)
@@ -44,5 +44,5 @@ def upper_bound(array, value):
     # return left if nums[left - 1] == target else -1
 
 # print(upper_bound([1,2,2,3], 0))
-# print(bisect.bisect_right([1,2,2,3], 0))
+# print(bisect.bisect_right([1,2,2,3], 1))
 

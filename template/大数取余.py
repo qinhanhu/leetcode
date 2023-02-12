@@ -1,4 +1,4 @@
-https://www.geeksforgeeks.org/how-to-compute-mod-of-a-big-number/
+# https://www.geeksforgeeks.org/how-to-compute-mod-of-a-big-number/
 def mod(self, num, a):
 
     # Initialize result

@@ -37,6 +37,9 @@ def dijkstra(start, graph):
     # 维护start到各个点的最短路径权重
     disFromStart = [float('inf')] * n
     disFromStart[start] = 0
+    # 记录每个节点的父节点，后续可以DFS输出路径
+    parents = [i for i in range(n)]
+
 
     minHeap = [] # heap 按距离(权重)排序
     # 从start开始BFS 
@@ -50,8 +53,19 @@ def dijkstra(start, graph):
             if curDisFromStart + disToNeighbor < disFromStart[neighbor]:
                 disFromStart[neighbor] = curDisFromStart + disToNeighbor
                 heapq.heappush(minHeap, (curDisFromStart + disToNeighbor, neighbor))
+                parents[neighbor] = cur
 
     return disFromStart
+
+def getPath(start, end, parents):
+    path = []
+    cur = end
+    while True:
+        path.append(cur)
+        if cur == start:
+            break
+        cur = parents[cur]
+    return path[::-1]
 
             
 
